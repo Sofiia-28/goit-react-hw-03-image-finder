@@ -43,7 +43,6 @@ img {
   top: 0;
   left: 0;
   position: sticky;
-  z-index: 1100;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -174,6 +173,9 @@ img {
 
 .modal {
   max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 24px);
+}
+.modal-image {
   max-height: calc(100vh - 24px);
 }
 
