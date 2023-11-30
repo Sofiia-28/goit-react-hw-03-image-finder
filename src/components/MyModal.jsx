@@ -16,7 +16,6 @@ const customStyles = {
 Modal.setAppElement('#root');
 
 export const MyModal = ({ largeImage, tags, onClose, isOpen }) => {
-  console.log(largeImage);
   return (
     <Modal
       isOpen={isOpen}

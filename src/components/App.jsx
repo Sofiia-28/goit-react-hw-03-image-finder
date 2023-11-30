@@ -1,47 +1,41 @@
 import './styles.css';
 import { Component } from 'react';
+import { fetchPictures } from '../api';
 import { SearchBar } from './SearchBar';
 import { ImageGallery } from './ImageGallery';
 import { Loader } from './Loader';
 import { Button } from './Button';
 import Notiflix from 'notiflix';
-import axios from 'axios';
-
-axios.defaults.baseURL = 'https://pixabay.com/api/';
-const API_KEY = '39834161-b44ad9889b268d198aeea1a60';
 
 export class App extends Component {
   state = {
-    images: {},
+    images: [],
     query: '',
     page: 1,
     isLoading: false,
     error: false,
+    id: null,
   };
 
   async componentDidUpdate(prevProps, prevState) {
+    const { query, page, id } = this.state;
     if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
+      prevState.query !== query ||
+      prevState.page !== page ||
+      prevState.id !== id
     ) {
-      const fetchPictures = async () => {
-        const params = new URLSearchParams({
-          key: API_KEY,
-          q: this.state.query.split(' ').slice(1).join(' '),
-          image_type: 'photo',
-          orientation: 'horizontal',
-          safesearch: true,
-          page: this.state.page,
-          per_page: 12,
-        });
-        const { data } = await axios.get(`?${params}`);
-        return data;
-      };
       try {
         this.setState({ isLoading: true, error: false });
-        const initialSearch = await fetchPictures();
-        this.setState({ images: initialSearch });
+        const initialSearch = await fetchPictures(query, page);
+        this.setState(prevState => {
+          const { hits, total } = initialSearch;
+          return {
+            images: [...prevState.images, hits],
+            showBtn: page < Math.ceil(total / 12),
+          };
+        });
       } catch (error) {
+        console.log(error);
         Notiflix.Notify.failure(
           'Oops, something went wrong, try reloading the page'
         );
@@ -54,14 +48,14 @@ export class App extends Component {
 
   handleSubmit = newQuery => {
     this.setState({
-      query: `${Date.now()} ${newQuery}`,
+      query: newQuery,
       page: 1,
       images: [],
+      id: Date.now(),
     });
   };
 
   handleLoadMore = () => {
-    window.scrollTo(0, 0);
     this.setState(prevState => {
       return {
         page: prevState.page + 1,
@@ -70,24 +64,24 @@ export class App extends Component {
   };
 
   render() {
-    const { images, isLoading, page } = this.state;
+    const { images, isLoading, showBtn } = this.state;
 
     return (
       <div className="app">
         <SearchBar onSubmit={this.handleSubmit} />
-        {images.hits?.length > 0 && (
+        {images.length > 0 && (
           <>
             <ImageGallery images={images} />
-          </>
-        )}
-        {page < images.total / 12 && (
-          <>
-            <Button nextPage={this.handleLoadMore} />
           </>
         )}
         {isLoading === true && (
           <>
             <Loader />
+          </>
+        )}
+        {showBtn && (
+          <>
+            <Button nextPage={this.handleLoadMore} />
           </>
         )}
       </div>

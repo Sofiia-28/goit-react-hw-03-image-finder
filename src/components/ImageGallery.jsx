@@ -1,12 +1,15 @@
 import './styles.css';
 import { ImageGalleryItem } from './ImageGalleryItem';
 
-export const ImageGallery = ({ images: { hits } }) => {
+export const ImageGallery = ({ images }) => {
   return (
     <ul className="imageGallery">
-      {hits.map(hit => {
-        return <ImageGalleryItem key={hit.id} imageData={hit} />;
-      })}
+      {images
+      .flatMap(imagesArr => imagesArr)
+      .map(image => {
+          return <ImageGalleryItem key={image.id} imageData={image} />;
+        })
+      }
     </ul>
   );
 };
